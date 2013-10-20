@@ -15,10 +15,11 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from django.http import HttpResponse, Http404
+from django.contrib.auth.decorators import login_required
 import registry
 
 # Create your views here.
-
+@login_required
 def search_view(request, search):
     """
     This view instnatiates the proper search class and returns

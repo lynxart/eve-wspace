@@ -101,3 +101,21 @@ $(document).on("focus", ".towerAuto", function(){
             }
        });
 });
+$(document).on("focus", ".corpAPIAuto", function(){
+        $(this).typeahead({
+            source: function(query, process){
+                 $.get('/search/apicorp/', {'term': query}, function(data){
+                    process(JSON.parse(data));
+                });
+            }
+       });
+});
+$(document).on("focus", ".groupAuto", function(){
+        $(this).typeahead({
+            source: function(query, process){
+                 $.get('/search/group/', {'term': query}, function(data){
+                    process(JSON.parse(data));
+                });
+            }
+       });
+});

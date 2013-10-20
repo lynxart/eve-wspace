@@ -1,0 +1,88 @@
+<ul style="margin-top: 15px;" class="nav nav-pills">
+    <li class="active"><a data-toggle="pill" href="#app{{application.pk}}Global">Settings</a></li>
+    {% for stage in application.stages.all %}
+    <li class="active"><a data-toggle="pill" href="#stage{{stage.pk}}">Stage: {{stage.name}}</a></li>
+    {% endfor %}
+    <li><a data-toggle="pill" href="#app{{application.pk}}NewStage"><i class="icon-plus"></i> Add Stage</a></li>
+</ul>
+<div class="tab-content">
+    <div class="tab-pane active" id="app{{application.pk}}Global">
+        {% if saved  %}
+        <div class="alert alert-success">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <strong>The application type was saved successfully.</strong>
+        </div>
+        {% endif %}
+        <form class="form-horizontal" id="app{{application.pk}}Form">
+            <div class="control-group">
+                <label for="applicationName" class="control-label">Name:</label>
+                <div class="controls">
+                    <input type="text" id="applicationName" name="name" value="{{application.name}}">
+                </div>
+            </div>
+             <div class="control-group">
+                <label for="appInstructions" class="control-label">Instructions:</label>
+                <div class="controls">
+                    <textarea type="text" id="appInstructions" name="instructions">{{application.instructions}}</textarea>
+                </div>
+            </div>
+             <div class="control-group">
+                <label for="appStandings" class="control-label">Use Standings From:</label>
+                <div class="controls">
+                    <input type="text" id="appStandings" class="corpAPIAuto" name="standings" {% if application.use_standings %}value="{{application.use_standings.name}}"{% endif %}>
+                </div>
+            </div>
+             <div class="control-group">
+                <label for="appAcceptGroup" class="control-label">Group on Accept:</label>
+                <div class="controls">
+                    <input type="text" id="appAcceptGroup" class="groupAuto" name="accept_group" {% if application.accept_group %}value="{{application.accept_group.name}}"{% endif %}>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <label class="checkbox">
+                        <input type="checkbox" id="appUserRequire" name="require_user" {% if application.require_account %}checked="checked"{% endif %}> Require pre-existing account
+                    </label>
+                   <label class="checkbox">
+                       <input type="checkbox" id="appDisable" name="disable_user" {% if application.disable_user_on_failure %}checked="checked"{% endif %}> Disable Account on Reject
+                    </label>
+                     <label class="checkbox">
+                         <input type="checkbox" id="appPurge" name="purge_api" {% if application.purge_api_on_failure %}checked="checked"{% endif %}> Purge API on Reject
+                    </label>
+               </div>
+           </div>
+           <div class="control-group">
+               <div class="controls">
+                   <button type="submit" class="btn btn-large btn-success">Save</button>
+                   <button id="btnDeleteApp" class="btn btn-large btn-danger">Delete App Type</button>
+                   <button id="btnReallyDeleteApp" class="btn btn-large btn-warning" style="display: none;">Really Delete</button>
+               </div>
+            </div>
+        </form>
+        <script type="text/javascript">
+            $('#app{{application.pk}}Form').submit(function(e){
+                    e.preventDefault();
+                    UpdateApplication({{application.pk}});
+                    return false;
+                    });
+            $('#btnDeleteApp').click(function(e){
+                    e.preventDefault();
+                    $('#btnDeleteApp').hide();
+                    $('#btnReallyDeleteApp').show();
+                    return false;
+                    });
+            $('#btnReallyDeleteApp').click(function(e){
+                    e.preventDefault();
+                    DeleteAppType({{application.pk}});
+                    return false;
+                    });
+        </script>
+    </div>
+    {% for stage in application.stages.all %}
+    <div class="tab-pane" id="stage{{stage.pk}}">
+    </div>
+    {% endfor %}
+    <div class="tab-pane" id="app{{application.pk}}NewStage">
+        <h5>New stage</h5>
+    </div>
+</div>

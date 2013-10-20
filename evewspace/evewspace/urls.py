@@ -44,4 +44,5 @@ urlpatterns = patterns('',
         url(r'^alerts/', include('Alerts.urls')),
         url(r'^api/', include('API.urls')),
         url(r'^teamspeak/', include('Teamspeak.urls')),
+        url(r'^recruitment/', include('Recruitment.urls')),
 )

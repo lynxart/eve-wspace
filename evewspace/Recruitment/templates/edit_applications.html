@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Edit Applications{% endblock %}
+{% block scripts %}
+<script type="text/javascript" src="{{STATIC_URL}}js/ro_app_editor.js"></script>
+{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="span2">
+        <h4>Applications:</h4>
+        <ul style="margin-top: 25px;" class="nav nav-pills nav-stacked">
+            {% for application in apps %}
+            <li><a data-toggle="pill" href="#app{{application.pk}}" onclick="GetApplication({{application.pk}});">{{application.name}}</a></li>
+            {% empty %}
+            <li>None Defined!</li>
+            {% endfor %}
+            <li><a data-toggle="pill" href="#applicationadd"><i class="icon-plus"></i> Add New</a></li>
+        </ul>
+    </div>
+    <div class="span9 offset1">
+        <div class="tab-content">
+            {% for application in apps %}
+            <div class="tab-pane" id="app{{application.pk}}">
+            </div>
+            {% endfor %}
+            <div class="tab-pane" id="applicationadd">
+                <h3>New Application Type:</h3>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

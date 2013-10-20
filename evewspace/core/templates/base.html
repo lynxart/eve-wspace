@@ -27,35 +27,28 @@
 		</div>
 
         <div id="baseNavDiv" class="navbar">
+            {% block navigation %}
             <div class="navbar-inner">
                 <ul class="nav">
                     <a class="brand" href="{% url 'core.views.home_view' %}">Eve W-Space</a>
                     {% load coretags %}
                     {% nav_entries %}
-                    {% comment %}    
-                {% include "map_nav.html" %}
-				{% include "sitetracker_nav.html" %}
-				{% include "cart_nav.html"%}
-				{% include "alerts_nav.html" %}
-				{% include "pos_nav.html"%}
-				{% include "recruitment_nav.html" %}
-				{% include "api_nav.html" %}
-                {% include "account_nav.html" %}
-                {% endcomment %}
-				{%block navigation %}{%endblock%}
             </ul>
-        </div>
+            </div>
+            {% endblock %}
 		</div>
 
 		<div id="baseContentHeadDiv" class="contenthead">
+            {% block sitetracker %}
             {% if perms.SiteTracker.can_sitetracker %}
             {% load sitetracker %}
             <div class="row">
-            <div id="stPlaceholderDiv" class="well well-small span9">
-                {% st_status_bar %}
+                <div id="stPlaceholderDiv" class="well well-small span9">
+                    {% st_status_bar %}
+                </div>
             </div>
-        </div>
             {% endif %}
+        {% endblock %}
             {%block contentheader %}{%endblock%}
 		</div>
 	
@@ -63,14 +56,19 @@
             <div id="modalHolder" class="modal hide">
             </div>
             {%block content %}{%endblock%}
-		</div>
-        {% feedback_panel %}
+        </div>
+        {% block feedback %}
+            {% feedback_panel %}
+        {% endblock %}
 		<div id="baseFooterDiv" class="footer">
             {%block footer %}{%endblock%}
+            {% block legal %}
             <div class="copyrightNotice">
             EVE Online and the EVE logo are the registered trademarks of CCP hf. All rights are reserved worldwide. All other trademarks are the property of their respective owners. EVE Online, the EVE logo, EVE and all associated logos and designs are the intellectual property of CCP hf. All artwork, screenshots, characters, vehicles, storylines, world facts or other recognizable features of the intellectual property relating to these trademarks are likewise the intellectual property of
             CCP hf. CCP hf. has granted permission to Eve W-Space to use EVE Online and all associated logos and designs for promotional and information purposes on its website but does not endorse, and is not in any way affiliated with, Eve W-Space. CCP is in no way responsible for the content on or functioning of this website, nor can it be liable for any damage arising from the use of this website.
-            </div>
+        </div>
+        {% endblock %}
+
 		</div>
 
 	</body>

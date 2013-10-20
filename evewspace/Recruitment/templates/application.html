@@ -1,0 +1,49 @@
+{% extends "app_base.html" %}
+{% block contentheader %}
+{% if app.instructions %}
+<div style="margin-left: 10%;">
+    <h4>Insturctions: {{app.instructions}}</h4>
+</div>
+{% endif %}
+{% endblock %}
+{% block content %}
+<div class="well">
+    <ul class="nav nav-pills">
+        <li class="active"><a href="#api-tab" data-toggle="tab">API Keys</a></li>
+        {% for stage in app.stages.all %}
+        <li><a href="#stage-{{stage.pk}}" data-toggle="tab">{{stage.name}}</a></li>
+        {% empty %}
+        <li><a href="#no-stages" data-toggle="tab">This application has no questions.</a></li>
+        {% endfor %}
+        <li><a href="#stage-submit" data-toggle="tab">Finish</a></li>
+    </ul>
+    <form id="application-form" class="form-horizontal" method="post">
+        {% csrf_token %}
+    <div class="tab-content">
+        <div class="tab-pane active" id="api-tab">
+            <h3>API Information:</h3>
+        </div>
+        {% for stage in app.stages.all %}
+        {% empty %}
+        <div class="tab-pane" id="no-stages">
+            <h3>The administrator has not defined any material for this application.</h3>
+        </div>
+        {% endfor %}
+        <div class="tab-pane" id="stage-submit">
+            <h3>Submit Application:</h3>
+            <p class="text-info">
+                When you are ready to submit your application, please click below. You will not be able to edit the application once submitted; however, you will be able to edit your API keys from the status page.
+            </p>
+            <br />
+            <button class="btn btn-large btn-info" type="submit">Submit Application</button>
+        </div>
+    </div>
+    </form>
+</div>
+<script type="text/javascript">
+    $('#application-form').submit(function(e){
+            e.preventDefault();
+            return false;
+            });
+</script>
+{% endblock %}

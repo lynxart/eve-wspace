@@ -21,6 +21,7 @@ This is based on the registry modules from django_autocomplete_light
 """
 
 from django.db import models
+from django.db.models.query import QuerySet
 from search_base import SearchBase
 
 class SearchRegistry(dict):
@@ -61,7 +62,8 @@ class SearchRegistry(dict):
             search_model_field = model._meta.get_field(search_field)
         except:
             raise Exception('The provided search field is not defined int he model.')
-        if not queryset:
+        if not type(queryset) == QuerySet:
+            print "No Queryset, defaulting to all for %s" % name
             queryset = model.objects.all()
         baseContext = {'choices': queryset,
                 'search_field': search_model_field}

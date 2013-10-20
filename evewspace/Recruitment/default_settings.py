@@ -14,17 +14,16 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from search import registry
-from models import Type, Corporation, Alliance
-from django.db.models import Count
+from core.models import ConfigEntry
+#defaults = [("TEST_SETTING", "BOB")]
+defaults = [
+        ("RECRUIT_REQUIRE_EMAIL", "1"),
+        ("RECRUIT_SHOW_FULL_STATUS", "0"),
+        ("RECRUIT_PROXY_ENABLED", "1"),
+        ]
 
-corp_list = []
-
-registry.register(Corporation, 'corp', 'name')
-registry.register(Alliance, 'alliance', 'name')
-registry.register(Type, 'item', 'name',
-        Type.objects.filter(published=1).all())
-registry.register(Type, 'tower', 'name',
-        Type.objects.filter(published=1, marketgroup__pk=478).all())
-registry.register(Corporation, 'apicorp', 'name',
-        Corporation.objects.filter(name__in=corp_list).all())
+def load_defaults():
+    for setting in defaults:
+        config = ConfigEntry.objects.get_or_create(name=setting[0], user=None)[0]
+        config.value = setting[1]
+        config.save()
