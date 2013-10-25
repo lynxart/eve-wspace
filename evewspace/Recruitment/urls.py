@@ -17,14 +17,14 @@
 from django.conf.urls.defaults import patterns, include, url
 
 apppatterns = patterns('Recruitment.views',
-        url(r'edit/$', 'edit_app_type'),
-        url(r'settings/$', 'app_global_settings'),
         url(r'stage/new/$', 'add_app_stage'),
         url(r'stage/(?P<stage_id>\d+)/delete/$', 'delete_app_stage'),
         url(r'stage/(?P<stage_id>\d+)/edit/$', 'edit_app_stage'),
         url(r'stage/(?P<stage_id>\d+)/question/new/$', 'new_question'),
         url(r'stage/(?P<stage_id>\d+)/question/(?P<question_id>\d+)/$', 'edit_question'),
         url(r'stage/(?P<stage_id>\d+)/question/(?P<question_id>\d+)/delete/$', 'delete_question'),
+        url(r'edit/$', 'edit_app_type'),
+        url(r'settings/$', 'app_global_settings'),
         url(r'delete/$', 'delete_app_type'),
         )
 
@@ -32,6 +32,7 @@ apppatterns = patterns('Recruitment.views',
 urlpatterns = patterns('Recruitment.views',
         url(r'register/$', 'applicant_register'),
         url(r'application/(?P<app_type_id>\d+)/$', 'get_application'),
+        url(r'application/new/$', 'new_app_type'),
         url(r'application/(?P<app_type_id>\d+)/', include(apppatterns)),
         url(r'applications/$', 'view_applications'),
         url(r'appeditor/$', 'edit_applications'),

@@ -174,7 +174,8 @@ class AppQuestion(models.Model):
     """Represents a question to be asked on the application."""
     question = models.CharField(max_length=255)
     question_type = models.IntegerField(choices=((1,'Text Field'),
-        (2, 'Text Box'), (3, 'Dropdown'), (3, 'Select')))
+        (2, 'Text Box'), (3, 'Radio'), (3, 'Checkbox')))
+    description = models.TextField(null=True, blank=True)
     required = models.BooleanField(default=True)
     app_type = models.ForeignKey('AppType', related_name='questions')
     app_stage = models.ForeignKey('AppStage', related_name='questions')

@@ -23,7 +23,17 @@
         <div class="tab-pane active" id="api-tab">
             <h3>API Information:</h3>
         </div>
+        {% load rotags %}
         {% for stage in app.stages.all %}
+        <div class="tab-pane" id="stage-{{stage.pk}}">
+            <h3>{{stage.name}}</h3>
+            <p class="text-info">{{stage.description}}</p>
+            <form class="form">
+            {% for q in stage.questions.all %}
+                {% render_question q %}
+            {% endfor %}
+            </form>
+        </div>
         {% empty %}
         <div class="tab-pane" id="no-stages">
             <h3>The administrator has not defined any material for this application.</h3>
