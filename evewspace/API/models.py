@@ -36,7 +36,7 @@ class APIKey(models.Model):
     vcode = models.CharField(max_length=100)
     valid = models.BooleanField(default=False)
     lastvalidated = models.DateTimeField()
-    access_mask = models.IntegerField()
+    access_mask = models.IntegerField(default=0)
     proxykey = models.CharField(max_length=100, null=True, blank=True)
     validation_error = models.CharField(max_length=255, null=True, blank=True)
 
@@ -136,6 +136,7 @@ class MemberAPIKey(APIKey):
             self.validation_error = "Access Denied: Key not valid."
             self.save()
             return False
+        self.access_mask = result.key.accessMask
         if result.key.type == u'Character' and not char_allowed:
             self.valid = False
             self.validation_error = ("API Key is a character key which is not "
@@ -148,7 +149,6 @@ class MemberAPIKey(APIKey):
                         "not allowed by the administrator.")
             self.save()
             return False
-        self.access_mask = result.key.accessMask
         corp_list = []
         access_error_list = []
         for character in result.key.characters:
