@@ -30,7 +30,7 @@
             <div class="control-group">
                 <label for="appLink{{application.pk}}" class="control-label">Apply URL:</label>
                 <div class="controls">
-                    <a id="appLink{{application.pk}}" href="{% url Recruitment.views.get_application application.pk %}">{% url Recruitment.views.get_application application.pk %}</a>
+                    <a id="appLink{{application.pk}}" href="{% url 'Recruitment.views.get_application' application.pk %}">{% url 'Recruitment.views.get_application' application.pk %}</a>
                 </div>
             </div>
              <div class="control-group">
