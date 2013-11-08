@@ -40,13 +40,12 @@ class AppComment(models.Model):
 
 class Application(models.Model):
     """Represents a recruitment application."""
-    applicant = models.ForeignKey(User, related_name="applications",
-            primary_key=True)
+    applicant = models.ForeignKey(User, related_name="applications")
     app_type = models.ForeignKey('AppType', related_name="applications")
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now=True)
     #closetime = None indicates that the application is still open
     closetime = models.DateTimeField(null=True)
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(default=datetime.now(pytz.utc))
     submitted = models.DateTimeField(null=True)
     closed_by = models.ForeignKey(User, related_name="applications_closed",
             null=True)
@@ -140,7 +139,7 @@ class Application(models.Model):
         return self
 
     def __unicode__(self):
-        return 'Applicant: %s Status: %s' % (self.applicant.name,
+        return 'Applicant: %s Status: %s' % (self.applicant.username,
                 self.disposition)
 
 
@@ -217,6 +216,14 @@ class AppType(models.Model):
     reject_subject = models.CharField(max_length=255, null=True)
     defer_mail = models.TextField(null=True)
     defer_subject = models.CharField(max_length=255, null=True)
+
+    def start_application(self, user):
+        """
+        Returns a blank application for the user with this type.
+        """
+        app = Application(app_type=self, applicant=user)
+        app.save()
+        return app
 
 
 class AppStage(models.Model):

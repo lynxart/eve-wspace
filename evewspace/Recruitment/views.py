@@ -25,10 +25,12 @@ from django import forms
 from core.utils import get_config
 from core.models import Corporation
 from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.core.urlresolvers import reverse
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import permission_required, login_required
 from models import *
+from API.models import MemberAPIKey
 
 def applicant_register(request, app_type=None):
     email_required = get_config('RECRUIT_REQUIRE_EMAIL', None).value == "1"
@@ -54,8 +56,8 @@ def applicant_register(request, app_type=None):
             return HttpResponseRedirect(request.POST.get('next_page'))
     else:
         form = RecruitRegistrationForm()
-    # TODO: Replace with url reversal
-    next_page = "/recruitment/apply/%s/" % app_type.pk
+    next_page = reverse('Recruitment.views.get_application',
+            args=(app_type.pk,))
     return TemplateResponse(request, "recruit_register.html", {'form': form,
                             'email_required': email_required,
                             'next_page': next_page,
@@ -68,8 +70,52 @@ def get_application(request, app_type_id):
         raise PermissionDenied
     if not app_type.require_account and not request.user.is_authenticated():
         return applicant_register(request, app_type)
+    app = app_type.start_application(request.user)
+    return HttpResponseRedirect(
+            reverse('Recruitment.views.get_application_form', args=(app.pk,)))
 
-    return TemplateResponse(request, 'application.html', {'app': app_type})
+@login_required
+def get_application_form(request, app_id):
+    app = get_object_or_404(Application, pk=app_id)
+    app_type = app.app_type
+    if app.applicant != request.user:
+        raise PermissionDenied
+    return TemplateResponse(request, 'application.html', {'app': app_type,
+        'application': app})
+
+@login_required
+def get_api_keys(request, app_id):
+    app = get_object_or_404(Application, pk=app_id)
+    if app.applicant != request.user or not request.is_ajax():
+        raise PermissionDenied
+    if request.method == "POST":
+        error_list = []
+        key_id = request.POST.get('key_id', 0)
+        key_vcode = request.POST.get('vcode', '')
+        if not key_id or not key_vcode:
+            error_list.append('You must provide both Key ID and vCode!')
+        else:
+            try:
+                key_id = int(key_id)
+            except ValueError:
+               error_list.append('The Key ID is invalid (not an integer)!')
+            api_key = MemberAPIKey(keyid=key_id, vcode=key_vcode,
+                    user=request.user)
+            api_key.validate()
+            if not api_key.validation_error:
+                return HttpResponse()
+            else:
+                error_list.append(api_key.validation_error)
+                api_key.delete()
+        if error_list:
+            error_text = ''
+            for x in error_list:
+                error_text += '%s<br />' % x
+            return HttpResponse(error_text, status=400)
+    else:
+
+        return TemplateResponse(request, 'api_widget.html',
+                {'application': app})
 
 @permission_required('Recruitment.can_recruit')
 def view_applications(request):

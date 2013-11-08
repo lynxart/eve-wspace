@@ -22,17 +22,53 @@
     <div class="tab-content">
         <div class="tab-pane active" id="api-tab">
             <h3>API Information:</h3>
+            <div class="row span12">
+                <div id="api_alert_placeholder">
+                </div>
+                <div class="span5">
+                    <h4>Add a key:</h4>
+                    <div class="form-horizontal" id="api_add_key">
+                        <input type="hidden" name="user_id" value="{{user.pk}}">
+                        <div class="control-group">
+                            <label for="api_key_id" class="control-label">Key ID:</label>
+                            <div class="controls">
+                                <input class="input-small" type="text" name="key_id" id="api_key_id">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label for="api_key_vcode" class="control-label">vCode:</label>
+                            <div class="controls">
+                                <input type="text" name="vcode" id="api_key_vcode" class="input-large">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button id="api_key_add_btn" type="button" onclick="ApplicantAddAPI({{application.pk}});" class="btn btn-info">Add Key</button>
+                        </div>
+                    </div>
+                    <script type="text/javascript">
+                        $('#api_add_key').submit(function(e){
+                                e.preventDefault();
+                                return false;
+                                });
+                    </script>
+                </div>
+                <div id="api_keys_on_file" class="span5 offset1">
+                    {% include "api_widget.html" %} 
+                </div>
+            </div>
         </div>
         {% load rotags %}
         {% for stage in app.stages.all %}
         <div class="tab-pane" id="stage-{{stage.pk}}">
             <h3>{{stage.name}}</h3>
             <p class="text-info">{{stage.description}}</p>
-            <form class="form">
             {% for q in stage.questions.all %}
-                {% render_question q %}
+                {% if not read_only_mode %}
+                    {% render_question q %}
+                {% else %}
+                    {% render_question q True %}
+                {% endif %}
             {% endfor %}
-            </form>
         </div>
         {% empty %}
         <div class="tab-pane" id="no-stages">
@@ -47,8 +83,8 @@
             <br />
             <button class="btn btn-large btn-info" type="submit">Submit Application</button>
         </div>
-    </div>
     </form>
+    </div>
 </div>
 <script type="text/javascript">
     $('#application-form').submit(function(e){

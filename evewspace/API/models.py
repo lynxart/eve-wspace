@@ -131,7 +131,7 @@ class MemberAPIKey(APIKey):
         self.lastvalidated = datetime.now(pytz.utc)
         try:
             result = auth.account.APIKeyInfo()
-        except eveapi.AuthenticationError:
+        except (eveapi.AuthenticationError, RuntimeError):
             self.valid = False
             self.validation_error = "Access Denied: Key not valid."
             self.save()
