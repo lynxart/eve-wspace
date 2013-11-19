@@ -50,3 +50,25 @@ function ApplicantRemoveAPIKey(key_id, app_id){
     });
     return false;
 }
+
+function SubmitApplication(app_id){
+    $('#btn-app-submit').attr("disabled", "disabled")
+    $('#btn-app-submit').html('Saving...')
+    $('#app_error_alert').hide();
+    $.ajax({
+        url: '/recruitment/application/' + app_id + '/save/',
+        type: 'POST',
+        data: $('#application-form').serialize(),
+        success: function (data) {
+            $('#btn-app-submit').html('Application Submitted.');
+            $('#app_success_alert').show();
+            location.reload();
+        },
+        error: function(error) {
+            $('#app_error_message').html('Sorry, your application was unable to be saved: \n\n' + error.responseText);
+            $('#app_error_alert').show();
+            $('#btn-app-submit').removeAttr("disabled");
+            $('#btn-app-submit').html('Submit Application');
+        }
+    });
+}

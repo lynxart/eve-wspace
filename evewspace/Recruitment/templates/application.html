@@ -1,6 +1,6 @@
 {% extends "app_base.html" %}
 {% block contentheader %}
-{% if app.instructions %}
+{% if app.instructions and not status_view %}
 <div style="margin-left: 10%;">
     <h4>Instructions: {{app.instructions}}</h4>
 </div>
@@ -10,13 +10,23 @@
 <div class="well">
     <ul class="nav nav-pills">
         <li class="active"><a href="#api-tab" data-toggle="tab">API Keys</a></li>
+        {% if not status_view %}
         {% for stage in app.stages.all %}
         <li><a href="#stage-{{stage.pk}}" data-toggle="tab">{{stage.name}}</a></li>
         {% empty %}
         <li><a href="#no-stages" data-toggle="tab">This application has no questions.</a></li>
         {% endfor %}
         <li><a href="#stage-submit" data-toggle="tab">Finish</a></li>
+        {% else %}
+        <li><a href="#stage-status" data-toggle="tab">Application Status</a></li>
+        {% endif %}
     </ul>
+    <div class="alert hide alert-error" id="app_error_alert">
+        <p id="app_error_message"></p>
+    </div>
+    <div class="alert {% if not status_view %}hide{% endif %} alert-success" id="app_success_alert">
+        <p>Your application has been saved successfully!</p>
+    </div>
     <form id="application-form" class="form-horizontal" method="post">
         {% csrf_token %}
     <div class="tab-content">
@@ -63,11 +73,7 @@
             <h3>{{stage.name}}</h3>
             <p class="text-info">{{stage.description}}</p>
             {% for q in stage.questions.all %}
-                {% if not read_only_mode %}
                     {% render_question q %}
-                {% else %}
-                    {% render_question q True %}
-                {% endif %}
             {% endfor %}
         </div>
         {% empty %}
@@ -75,13 +81,25 @@
             <h3>The administrator has not defined any material for this application.</h3>
         </div>
         {% endfor %}
+        {% if status_view %}
+        <div class="tab-pane" id="stage-status">
+            <h3>Application Status: {% if not application.disposition %} Open {% elif application.disposition == 1 %} Accepted {% elif application.disposition == 2 %} Rejected {% else %} Deferred{% endif %}</h3>
+            <p class="text-info"> Your application was submitted on {{application.submitted|date:'Y-M-d h:m'}}.</p>
+            <h4>Status Message:</h4>
+            {% if application.status_text %}
+            <p class="text-info">{{application.status_text}}</p>
+            {% else %}
+            <p class="text-info">No message has been added.</p>
+            {% endif %}
+        </div>
+        {% endif %}
         <div class="tab-pane" id="stage-submit">
-            <h3>Submit Application:</h3>
+            <h3>Submit Application</h3>
             <p class="text-info">
                 When you are ready to submit your application, please click below. You will not be able to edit the application once submitted; however, you will be able to edit your API keys from the status page.
             </p>
             <br />
-            <button class="btn btn-large btn-info" type="submit">Submit Application</button>
+            <button class="btn btn-large btn-info" id="btn-app-submit" type="submit">Submit Application</button>
         </div>
     </form>
     </div>
@@ -89,6 +107,7 @@
 <script type="text/javascript">
     $('#application-form').submit(function(e){
             e.preventDefault();
+            SubmitApplication({{application.pk}});
             return false;
             });
 </script>

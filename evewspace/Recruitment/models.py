@@ -58,6 +58,54 @@ class Application(models.Model):
                 ('recruitment_admin', "Can administer the RO tool."),
                 )
 
+    def save_from_dict(self, answers):
+        """
+        Save question responses from POST request.
+        """
+        # Clear responses for checkbox type questions
+        for response in self.responses.filter(question__question_type=4):
+            response.response = ''
+            response.save()
+        for key, value in answers.items():
+            split_key = key.split('-')
+            if len(split_key) != 2:
+                continue
+            if split_key[0] == 'question':
+                question_type = self.app_type.questions.get(
+                        pk=int(split_key[1]))
+                if self.responses.filter(question=question_type).exists():
+                    response = self.responses.get(question=question_type)
+                else:
+                    response = AppResponse(application=self,
+                            question=question_type)
+                if question_type.question_type < 3:
+                    response.response = answers.get(key, '')
+                if question_type.question_type == 3:
+                    choice_id = answers.get(key, None)
+                    if not choice_id:
+                        response.response = 'Unanswered'
+                    else:
+                        response.response = question_type.choices.get(
+                                pk=int(choice_id)).value
+                response.save()
+            if split_key[0] == 'choice':
+                choice_obj = AppQuestionChoice.objects.get(pk=int(split_key[1]))
+                question_type = choice_obj.question
+                if self.responses.filter(question=question_type).exists():
+                    response = self.responses.get(question=question_type)
+                else:
+                    response = AppResponse(application=self,
+                            question=question_type, response='')
+                if not question_type.question_type == 4:
+                    continue
+                response.response = '%s%s\n' % (response.response, choice_obj.value)
+                response.save()
+        if not self.submitted:
+            self.submitted = datetime.now(pytz.utc)
+            self.save()
+        return True
+
+
     def add_action(self, user, action, note):
         result = AppAction(application=self, user=user, action=action,
                 note=note)

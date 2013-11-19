@@ -80,8 +80,11 @@ def get_application_form(request, app_id):
     app_type = app.app_type
     if app.applicant != request.user:
         raise PermissionDenied
+    status_view = False
+    if app.submitted:
+        status_view = True
     return TemplateResponse(request, 'application.html', {'app': app_type,
-        'application': app})
+        'application': app, 'status_view': status_view})
 
 @login_required
 def get_api_keys(request, app_id):
@@ -116,6 +119,17 @@ def get_api_keys(request, app_id):
 
         return TemplateResponse(request, 'api_widget.html',
                 {'application': app})
+
+@login_required
+def save_application(request, app_id):
+    if not request.is_ajax():
+        raise PermissionDenied
+    app = get_object_or_404(Application, pk=app_id)
+    try:
+        app.save_from_dict(request.POST.copy())
+    except Exception as ex:
+        raise
+    return HttpResponse()
 
 @permission_required('Recruitment.can_recruit')
 def view_applications(request):
