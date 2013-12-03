@@ -25,6 +25,7 @@ from django import forms
 from core.utils import get_config
 from core.models import Corporation
 from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login
@@ -133,7 +134,17 @@ def save_application(request, app_id):
 
 @permission_required('Recruitment.can_recruit')
 def view_applications(request):
-    return HttpResponse()
+    open_apps = Application.objects.filter(submitted__isnull=False,
+            disposition__isnull=True).all()
+    closed_apps = Application.objects.filter(disposition__isnull=False).all()
+
+    open_paginator = Paginator(open_apps, 4)
+    open_pages = [open_paginator.page(x) for x in open_paginator.page_range]
+    closed_paginator = Paginator(closed_apps, 4)
+    closed_pages = [closed_paginator.page(x) for x in closed_paginator.page_range]
+
+    return TemplateResponse(request, 'ro_panel.html',
+            {'open_apps': open_pages, 'closed_apps': closed_pages})
 
 @permission_required('Recruitment.recruitment_admin')
 def edit_applications(request):

@@ -106,6 +106,15 @@ class Application(models.Model):
         return True
 
 
+    def completion(self):
+        """Return completion percentage for rendering"""
+        action_count = float(self.actions.count())
+        all_actions = float(AppAction.objects.count())
+        if all_actions != 0:
+            return (float(action_count)/float(all_actions)) * 100
+        else:
+            return 0
+
     def add_action(self, user, action, note):
         result = AppAction(application=self, user=user, action=action,
                 note=note)
