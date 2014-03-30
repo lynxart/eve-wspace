@@ -16,8 +16,11 @@
                 {% for app in page %}
                         <div class="span3 well">
                             <a href="#" class="text-info pull-left">{{app.applicant.username}}</a>
-                            <span class="pull-right">0/10 Votes</span><br />
-                            <span class="pull-left">{{app.completion}}% Complete</span>
+                            <span class="pull-right">{{app.completion}}% Complete</span>
+                            {% if app.can_be_accepted %}
+                            <br />
+                            <span class="pull-left text-success">CAN ACCEPT</span>
+                            {% endif %}
                         </div>
                 {% endfor %}
             </div>

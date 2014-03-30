@@ -25,10 +25,84 @@ import pytz
 # Create your models here.
 
 class Action(models.Model):
-    """Represents an action that can be taken on an application e.g Intel Ran"""
-    name = models.CharField(max_length=100, unique=True)
-    descripiton = models.TextField(blank=True)
+    """
+    Represents an action that can be taken on an application e.g Intel Ran
+    """
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
     required = models.BooleanField(default=False)
+    order = models.IntegerField(default=0)
+    action_type = models.IntegerField(default=1, choices=((1, 'Approval'),
+        (2, 'Countersign'), (3, 'Vote')))
+    visible = models.BooleanField(default=True)
+    required_votes = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'name']
+
+class ActionEntry(models.Model):
+    action = models.ForeignKey(Action)
+    application = models.ForeignKey('Application', related_name='actions')
+    completed = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ['action', 'application']
+
+
+class ApprovalAction(ActionEntry):
+    action_entry = models.OneToOneField(ActionEntry,
+            related_name='approval_info', parent_link=True)
+    approver = models.ForeignKey(User, related_name="ro_approvals", null=True)
+    approval_comment = models.TextField(null=True, blank=True)
+    approval_time = models.DateTimeField(null=True)
+
+    def save(self, *args, **kwargs):
+        if self.approver:
+            self.completed = True
+        else:
+            self.completed = False
+        super(ApprovalAction, self).save(*args, **kwargs)
+
+
+class CountersignAction(ActionEntry):
+    action_entry = models.OneToOneField(ActionEntry,
+            related_name='countersign_info', parent_link=True)
+    approver1 = models.ForeignKey(User, null=True,
+            related_name="counter_approve1")
+    approver2 = models.ForeignKey(User, null=True,
+            related_name="counter_approve2")
+    approver1_comment = models.TextField(null=True, blank=True)
+    approver1_time = models.DateTimeField(null=True)
+    approver2_comment = models.TextField(null=True, blank=True)
+    approver2_time = models.DateTimeField(null=True)
+
+    def save(self, *args, **kwargs):
+        if self.approver1 and self.approver2:
+            self.completed = True
+        else:
+            self.completed = False
+        super(CountersignAction, self).save(*args, **kwargs)
+
+
+class VoteAction(ActionEntry):
+    action_entry = models.OneToOneField(ActionEntry,
+            related_name='vote_info', parent_link=True)
+    votes_for = models.ManyToManyField(User, related_name='ro_votes_for')
+    votes_against = models.ManyToManyField(User,
+            related_name='ro_votes_against')
+
+    def save(self, *args, **kwargs):
+        if (self.action.required_votes and
+                self.votes_for.objects.count() > self.action.required_votes):
+            self.completed = True
+        elif self.action.required_votes:
+            self.completed = False
+        else:
+            if (self.votes_for.objects.count() >=
+                    self.votes_against.objects.count()):
+                self.completed = False
+
+        super(VoteAction, self).save(*args, **kwargs)
 
 
 class AppComment(models.Model):
@@ -105,21 +179,21 @@ class Application(models.Model):
             self.save()
         return True
 
+    def can_be_accepted(self):
+        if self.actions.filter(action__required=True,
+                completed=False).count() != 0:
+            return False
+        else:
+            return True
 
     def completion(self):
         """Return completion percentage for rendering"""
-        action_count = float(self.actions.count())
-        all_actions = float(AppAction.objects.count())
+        action_count = float(self.actions.filter(completed=True).count())
+        all_actions = float(self.actions.count())
         if all_actions != 0:
             return (float(action_count)/float(all_actions)) * 100
         else:
             return 0
-
-    def add_action(self, user, action, note):
-        result = AppAction(application=self, user=user, action=action,
-                note=note)
-        result.save()
-        return result
 
     def add_vote(self, user, disposition, note):
         result = AppVote(application=self, user=user, disposition=disposition,
@@ -195,6 +269,30 @@ class Application(models.Model):
                     body=self.app_type.accept_mail)
         return self
 
+    def add_workflow_entry(self, action):
+        """
+        Creates an empty workflow entry for the given action type.
+        """
+        if action.action_type == 1:
+            ApprovalAction(action=action, application=self).save()
+        if action.action_type == 2:
+            CountersignAction(action=action, application=self).save()
+        if action.action_type == 3:
+            VoteAction(action=action, application=self).save()
+
+    def recreate_workflow_entry(self, action):
+        """
+        Removes and re-creates the workflow entry for the given action type.
+        """
+        self.actions.filter(action=action).delete()
+        self.add_workflow_entry(action)
+
+    def remove_workflow_entry(self, action):
+        """
+        Removes the workflow entry for the given action type.
+        """
+        self.actions.filter(action=action).delete()
+
     def __unicode__(self):
         return 'Applicant: %s Status: %s' % (self.applicant.username,
                 self.disposition)
@@ -207,14 +305,6 @@ class AppVote(models.Model):
     disposition = models.IntegerField(choices=((1,'Accept',), (2,'Reject'),
         (3, 'Defer')))
     note = models.TextField(blank=True, null=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-
-class AppAction(models.Model):
-    """Represents an action taken on an application."""
-    application = models.ForeignKey(Application, related_name='actions')
-    action = models.ForeignKey(Action, related_name='instances')
-    note = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
 

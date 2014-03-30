@@ -1,0 +1,25 @@
+<div class="row">
+    {% for action in actions %}
+        <div class="span3 well">
+            <h4>
+                {{action.name}} 
+                {% if action.required %}
+                <i class="icon-star" title="This is a required action."></i>
+                {% else %}
+                <i class="icon-star-empty" title="This is NOT a required action."></i>
+                {% endif %}
+            </h4>
+            <p class="text-info">{{action.description}}</p>
+            <button class="btn btn-info"><i class="icon-pencil"></i> Edit</button> 
+            <button class="btn btn-warning"><i class="icon-remove"></i> Remove</button>
+        </div>
+    {% empty %}
+        <div class="span3 well">
+            <h4 class="text-info"> No Actions Defined</h4>
+        </div>
+    {% endfor %}
+        <div class="span3 well">
+            <button class="btn btn-info btn-block" onclick="GetAddWorkflowDialog();"><i class="icon-plus"></i> Add Action</button>
+        </div>
+</div>
+

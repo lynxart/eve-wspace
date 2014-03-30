@@ -152,8 +152,46 @@ def edit_applications(request):
             {'apps': AppType.objects.filter(deleted=False).all()})
 
 @permission_required('Recruitment.recruitment_admin')
-def edit_workflows(request):
-    return HttpResponse()
+def workflow_section(request):
+    return TemplateResponse(request, 'edit_workflow.html')
+
+@permission_required('Recruitment.recruitment_admin')
+def workflow_list(request):
+    if not request.is_ajax():
+        raise PermissionDenied
+    actions = Action.objects.filter(visible=True).all()
+    return TemplateResponse(request, 'workflow_list.html',
+                {'actions': actions})
+
+@permission_required('Recruitment.recruitment_admin')
+def add_workflow(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', None)
+        description = request.POST.get('description', None)
+        order = request.POST.get('order', '0')
+        if order:
+            order_index = int(order)
+        else:
+            order_index = 0
+        action_type = int(request.POST.get('action_type', '1'))
+        votes = request.POST.get('votes', '0')
+        if votes != '':
+            required_votes = int(votes)
+        else:
+            required_votes = 0
+        required = request.POST.get('required', '0') == 'on'
+        action = Action(name=name, description=description, required=required,
+                order=order_index, required_votes=required_votes)
+        action.save()
+        for application in Application.objects.filter(disposition=None).all():
+            application.add_workflow_entry(action)
+        return HttpResponse()
+    else:
+        return TemplateResponse(request, 'add_workflow.html')
+
+@permission_required('Recruitment.recruitment_admin')
+def workflow_edit(request, workflow_id):
+    return TemplateResponse(request, 'edit_workflow.html')
 
 @permission_required('Recruitment.recruitment_admin')
 def recruitment_settings(request):

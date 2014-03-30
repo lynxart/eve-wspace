@@ -3,7 +3,7 @@
         <li><a href="{% url 'Recruitment.views.view_applications' %}">View Applications</a></li>
         {% if perms.Recruitment.recruitment_admin %}
         <li><a href="{% url 'Recruitment.views.edit_applications' %}">Application Editor</a></li>
-        <li><a href="{% url 'Recruitment.views.edit_workflows' %}">Workflow Editor</a></li>
+        <li><a href="{% url 'Recruitment.views.workflow_section' %}">Workflow Editor</a></li>
         {% endif %}
 	</ul></li>
 {% endif %}
