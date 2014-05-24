@@ -1,59 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
-<ul class="nav nav-pills">
-    <li><a href="#open-applications" data-toggle="pill">Open Applications</a></li>
-    <li><a href="#closed-applications" data-toggle="pill">Closed Applications</a></li>
-</ul>
-<div class="tab-content">
-    <div class="tab-pane active" id="open-applications">
-        <h3>Open Applications</h3>
-        <br />
-        {% if not open_apps.0.object_list %}
-        <p class="text-info">There are no open applications!</p>
-        {% else %}
-            {% for page in open_apps %}
-            <div class="row" style="margin-left: 10px;">
-                {% for app in page %}
-                        <div class="span3 well">
-                            <a href="#" class="text-info pull-left">{{app.applicant.username}}</a>
-                            <span class="pull-right">{{app.completion}}% Complete</span>
-                            {% if app.can_be_accepted %}
-                            <br />
-                            <span class="pull-left text-success">CAN ACCEPT</span>
-                            {% endif %}
-                        </div>
-                {% endfor %}
-            </div>
-            {% endfor %}
-        {% endif %}
+<div class="row">
+    <div class="span2">
+        <h6 class="text-info">Currently Viewing:</h6>
+
     </div>
-    <div class="tab-pane" id="closed-applications">
-        <h3>Closed Applications</h3>  
-        <br />
-        {% if not closed_apps.0.object_list %}
-        <p class="text-info">There are no closed applications!</p>
-        {% else %}
-        {% for page in closed_apps %}
-            <div class="row">
-                {% for app in page %}
-                <div class="span3 well">
-                    <a href="#" class="text-info pull-left">{{app.applicant.username}}</a>
-                    <span class="pull-right">
-                        {% if app.disposition == 0 %}
-                        Duplicate
-                        {% elif app.disposition == 1 %}
-                        Accepted
-                        {% elif app.disposition == 2 %}
-                        Rejected
-                        {% else %}
-                        Deferred
-                        {% endif %}
-                    </span>
-                </div>
-                {% endfor %}
-            </div>
-            {% endfor %}
-        {% endif %}
-   </div>
+    <div class="span10">
+        <h3>Workflow Placeholder</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="span2">
+        <h6 class="text-info">Open Apps:</h6>
+        {% for app in open_apps %}
+        <h4>{{app.applicant.username}}</h4>
+        {% empty %}
+        <h4>No Open Applications</h4>
+        {% endfor %}
+    </div>
+    <div class="span10 well" id="application-holder-div">
+
+    </div>
 </div>
 {% endblock %}

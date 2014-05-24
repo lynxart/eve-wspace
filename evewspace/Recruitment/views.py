@@ -138,13 +138,8 @@ def view_applications(request):
             disposition__isnull=True).all()
     closed_apps = Application.objects.filter(disposition__isnull=False).all()
 
-    open_paginator = Paginator(open_apps, 4)
-    open_pages = [open_paginator.page(x) for x in open_paginator.page_range]
-    closed_paginator = Paginator(closed_apps, 4)
-    closed_pages = [closed_paginator.page(x) for x in closed_paginator.page_range]
-
     return TemplateResponse(request, 'ro_panel.html',
-            {'open_apps': open_pages, 'closed_apps': closed_pages})
+            {'open_apps': open_apps, 'closed_apps': closed_apps})
 
 @permission_required('Recruitment.recruitment_admin')
 def edit_applications(request):
