@@ -64,8 +64,6 @@ class POS(models.Model):
     def save(self, *args, **kwargs):
         if not self.posname:
             self.posname = self.towertype.name
-        # Ensure that any newline characters in fitting are changed to <br>
-        self.fitting = self.fitting.replace("\n", "<br />")
         # Mark tower as having been updated
         from datetime import datetime
         import pytz
@@ -106,7 +104,10 @@ class POS(models.Model):
         self.guns = 0
         self.ewar = 0
         for row in fit:
-            itemType = Type.objects.get(name=row[1])
+            try:
+                itemType = Type.objects.get(name=row[1])
+            except Type.DoesNotExist: #odd bug where invalid items get into dscan
+                continue
             if itemType.marketgroup:
                 groupTree = []
                 parent = itemType.marketgroup
@@ -136,7 +137,9 @@ class POS(models.Model):
         if towers == 1 and self.towertype_id is None and self.posname is None:
             self.towertype = towertype
             self.posname = posname
-        if towers <= 1:
+        if towers == 0 and self.towertype_id is None:
+            raise AttributeError('No POS in the D-Scan!')
+        elif towers <= 1:
             self.save()
         else:
             raise AttributeError('Too many towers detected in the D-Scan!')

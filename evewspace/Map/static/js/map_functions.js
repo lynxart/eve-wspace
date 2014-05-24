@@ -43,6 +43,9 @@ $(document).ready(function(){
     if (autoRefresh === true){
         refreshTimerID = setInterval(RefreshMap, 15000);
     }
+    if (silentSystem === true){
+        $('#btnSilentAdd').text('Silent IGB Mapping: ON');
+    }
 });
 
 $(document).ready(function(){
@@ -313,17 +316,24 @@ function GetSiteSpawns(msID, sigID){
 function AddPOS(sysID){
     //This function adds a system using the information in a form named #sysAddForm
     address = "/pos/" + sysID + "/add/";
+    $('#pos_message').hide();
+    $('#btnAddPOS').html('Saving...');
+    $('#btnAddPOS').addClass('disabled');
     $.ajax({
         type: "POST",
         url: address,
         data: $('#addPOSForm').serialize(),
         success: function(data){
-            if (data != '\n') {
-                $('#message').text(data);
-            } else {
-                GetPOSList(sysID);
-                $('#modalHolder').modal('hide');
-            }
+            GetPOSList(sysID);
+            $('#modalHolder').modal('hide');
+            $('#btnAddPOS').html('Add POS');
+            $('#btnAddPOS').removeClass('disabled');
+        },
+        error: function(error){
+           $('#pos_message').html(error.responseText);
+           $('#pos_message').show();
+           $('#btnAddPOS').html('Add POS');
+           $('#btnAddPOS').removeClass('disabled');
         }
     });
 }
@@ -331,12 +341,12 @@ function AddPOS(sysID){
 
 function DeletePOS(posID, sysID){
     address = "/pos/" + sysID + "/" + posID + "/remove/";
-    $.ajax({
+   $.ajax({
         type: "POST",
         url: address,
         success: function(){
             GetPOSList(sysID);
-        }
+       },
     });
 }
 
@@ -356,16 +366,27 @@ function GetEditPOSDialog(posID, sysID){
 
 
 function EditPOS(posID, sysID){
-    //This function adds a system using the information in a form named #sysAddForm
     address = "/pos/" + sysID + "/" + posID + "/edit/";
-    $.ajax({
+    $('#pos_message').hide();
+    $('#btnEditPOS').html('Saving...');
+    $('#btnEditPOS').addClass('disabled');
+   $.ajax({
         type: "POST",
         url: address,
         data: $('#editPOSForm').serialize(),
         success: function(data){
             GetPOSList(sysID);
-        }
-    });
+            $('#modalHolder').modal('hide');
+            $('#btnEditPOS').html('Save POS');
+            $('#btnEditPOS').removeClass('disabled');
+       },
+       error: function(error){
+           $('#pos_error').html(error.responseText);
+           $('#pos_message').show();
+           $('#btnEditPOS').html('Save POS');
+           $('#btnEditPOS').removeClass('disabled');
+      }
+   });
 }
 
 
@@ -870,6 +891,12 @@ function DrawSystem(system) {
         childSys.WhFromParentBubbled = system.WhFromParentBubbled;
         childSys.WhToParentBubbled = system.WhToParentBubbled;
         childSys.click(onSysClick);
+
+        // Dont even get me started...
+        if (system.backgroundImageURL) {
+            paper.image(system.backgroundImageURL, childSys.attr("cx") - 28, childSys.attr("cy") - 28, 55, 55);
+        }
+
         sysText = paper.text(sysX, sysY, sysName);
         sysText.msID = system.msID;
         sysText.sysID = system.sysID;
@@ -904,6 +931,10 @@ function DrawSystem(system) {
         var rootSys = paper.ellipse(sysX, sysY, 40, 30);
         rootSys.msID = system.msID;
         rootSys.sysID = system.sysID;
+        // Dont even get me started...
+        if (system.backgroundImageURL) {
+            paper.image(system.backgroundImageURL, rootSys.attr("cx") - 28, rootSys.attr("cy") - 28, 55, 55);
+        }
         rootSys.click(onSysClick);
         sysText = paper.text(sysX, sysY, sysName);
         sysText.msID = system.msID;
@@ -1058,8 +1089,8 @@ function ColorSystem(system, ellipseSystem, textSysName) {
         }
     iconX = ellipseSystem.attr("cx")+40;
     iconY = ellipseSystem.attr("cy")-35;
-    if (system.imageURL){
-        paper.image(system.imageURL, iconX, iconY, 25, 25);
+    if (system.iconImageURL) {
+        paper.image(system.iconImageURL, iconX, iconY, 25, 25);
     }
     ellipseSystem.attr({ fill: sysColor, stroke: sysStroke, "stroke-width": sysStrokeWidth, cursor: "pointer", "stroke-dasharray": sysStrokeDashArray });
     textSysName.attr({ fill: textColor, "font-size": textFontSize, cursor: "pointer" });
